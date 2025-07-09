@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Pet's Favorite Note Taker - Live Dictation</title>
+  <title>Pet's Favorite Note Taker - Dashboard</title>
   <style>
     body { font-family: sans-serif; padding: 20px; background: #f9f9f9; }
     h1 { color: #2B5D34; }
@@ -30,10 +30,15 @@
     let recognition;
     function startDictation() {
       const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-      if (!SpeechRecognition) return alert("Speech recognition not supported in this browser.");
+      if (!SpeechRecognition) {
+        alert("Sorry, your browser doesn't support speech recognition. Please use Google Chrome.");
+        return;
+      }
       recognition = new SpeechRecognition();
       recognition.continuous = true;
       recognition.interimResults = true;
+      recognition.onstart = () => console.log("Speech recognition started");
+      recognition.onerror = (event) => alert("Speech recognition error: " + event.error);
       recognition.onresult = (event) => {
         let transcript = "";
         for (let i = event.resultIndex; i < event.results.length; i++) {
@@ -58,11 +63,11 @@
 
     function startVisit() {
       const pet = document.getElementById("petName").value.trim();
-      if (!pet) return alert("Please enter a name.");
+      if (!pet) return alert("Please enter a pet name.");
       const date = new Date().toISOString().slice(0,10);
       const id = Date.now().toString();
       const name = pet + " — " + date;
-      const url = location.origin + "/visit.html?id=" + id + "&name=" + encodeURIComponent(name);
+      const url = `visit.html?id=${id}&name=${encodeURIComponent(name)}`;
       const tabs = getTabs();
       tabs.push({ id, name, url });
       saveTabs(tabs);
@@ -84,8 +89,8 @@
       tabs.forEach(tab => {
         const div = document.createElement("div");
         div.className = "visit-link";
-        div.innerHTML = \`<span onclick="window.open('\${tab.url}', '_blank')">\${tab.name}</span>
-                          <button style="float:right" onclick="archiveTab('\${tab.id}')">Archive</button>\`;
+        div.innerHTML = `<span onclick="window.open('${tab.url}', '_blank')">${tab.name}</span>
+                          <button style="float:right" onclick="archiveTab('${tab.id}')">Archive</button>`;
         tabList.appendChild(div);
       });
     }
